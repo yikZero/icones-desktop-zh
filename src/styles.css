@@ -104,11 +104,11 @@ select {
   border-right: 1px solid var(--border);
 }
 
-/* Top padding leaves a draggable strip for the macOS traffic lights; the
-   search itself spans the full sidebar width. */
+/* Top padding leaves a draggable title-bar strip (macOS traffic lights); the
+   search spans the full sidebar width and lines up with the main search. */
 .sidebar-header {
   flex-shrink: 0;
-  padding: 34px 12px 4px;
+  padding: 42px 12px 6px;
 }
 
 .sidebar-search {
@@ -321,8 +321,7 @@ select {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 20px;
-  height: 64px;
+  padding: 42px 20px 6px;
 }
 
 .search {
