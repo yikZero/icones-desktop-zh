@@ -34,7 +34,7 @@ export const Topbar = forwardRef<HTMLInputElement, Props>(function Topbar(
   _ref,
 ) {
   return (
-    <header className="topbar" data-tauri-drag-region>
+    <header className="topbar">
       <div className="search">
         <Icon icon="lucide:search" className="search-icon" />
         {scope && (

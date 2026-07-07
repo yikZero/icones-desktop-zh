@@ -17,7 +17,7 @@
         "height": 820,
         "minWidth": 940,
         "minHeight": 620,
-        "titleBarStyle": "Transparent",
+        "titleBarStyle": "Overlay",
         "hiddenTitle": true,
         "theme": "Dark"
       }
