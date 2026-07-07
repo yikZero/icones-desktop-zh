@@ -10,7 +10,7 @@
 
 打开本仓库的 [**Releases**](https://github.com/mufanmu/icones-desktop-zh/releases/latest) 拿到最新 `.dmg`，双击挂载后把 **Icônes** 拖进 **应用程序** 文件夹即可。
 
-> 当前仅 **Apple Silicon (arm64)**。Intel 构建后续会补上。
+> 提供 **Universal 通用包**：同一个 `.dmg` 在 Intel 与 Apple Silicon 上都原生运行（最低 macOS 10.13）。新版本由 CI 在打 tag 时自动构建（见 [.github/workflows/release.yml](.github/workflows/release.yml)）；若某次 Releases 暂时只有 arm64 包，可自行 `npm run tauri:build:universal` 构建。
 > 此版本未做 Apple Developer 签名，首次打开时需在 `系统设置 → 隐私与安全性` 点「仍要打开」放行一次，或终端执行：
 > ```
 > xattr -dr com.apple.quarantine "/Applications/Icônes.app"
@@ -60,8 +60,16 @@ npm run dev            # 仅前端，http://localhost:1420
 ## 构建
 
 ```bash
-npm run tauri build    # 产物在 src-tauri/target/release/bundle
+# 仅本机架构
+npm run tauri build              # 产物在 src-tauri/target/release/bundle
+
+# Universal 通用包（Intel + Apple Silicon 合一，发布推荐）
+rustup target add x86_64-apple-darwin aarch64-apple-darwin   # 首次装好两个目标
+npm run tauri:build:universal    # 产物在 src-tauri/target/universal-apple-darwin/release/bundle
 ```
+
+> 交叉编译需要 `rustup`（Homebrew 版 rust 不带其它架构的标准库）。
+> 打 `v*` tag 会触发 [.github/workflows/release.yml](.github/workflows/release.yml) 自动构建 Universal `.dmg` 并发到 Releases（草稿）。
 
 ## 协议
 

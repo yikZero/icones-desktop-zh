@@ -100,12 +100,25 @@ export function translateChinese(query: string): string[] {
   return [...out];
 }
 
-// 国旗精确匹配过滤：对短 IoT国家码（<=3 字母纯码）的结果保留
+// ISO 3166-1 alpha-2 国家/地区码全集。国旗库（circle-flags/flag/cif/flagpack）均以两字母码命名，
+// 故仅当检索词是真实国家码时才启用国旗精确模式——避免把 map/car/cat/key/sun/add 这类普通短词
+// 误判成"国家码"从而把整页结果清空（原 /^[a-z]{1,3}$/ 会命中所有 ≤3 字母词，是严重 bug）。
+const COUNTRY_CODES = new Set(
+  ("ad ae af ag ai al am ao aq ar as at au aw ax az ba bb bd be bf bg bh bi bj bl bm bn bo bq br bs bt bv bw by bz " +
+    "ca cc cd cf cg ch ci ck cl cm cn co cr cu cv cw cx cy cz de dj dk dm do dz ec ee eg eh er es et fi fj fk fm fo fr " +
+    "ga gb gd ge gf gg gh gi gl gm gn gp gq gr gs gt gu gw gy hk hm hn hr ht hu id ie il im in io iq ir is it je jm jo jp " +
+    "ke kg kh ki km kn kp kr kw ky kz la lb lc li lk lr ls lt lu lv ly ma mc md me mf mg mh mk ml mm mn mo mp mq mr ms mt " +
+    "mu mv mw mx my mz na nc ne nf ng ni nl no np nr nu nz om pa pe pf pg ph pk pl pm pn pr ps pt pw py qa re ro rs ru rw " +
+    "sa sb sc sd se sg sh si sj sk sl sm sn so sr ss st sv sx sy sz tc td tf tg th tj tk tl tm tn to tr tt tv tw tz ua ug " +
+    "um us uy uz va vc ve vg vi vn vu wf ws ye yt za zm zw").split(" "),
+);
+
+// 国旗精确匹配过滤：只有真实国家码（见 COUNTRY_CODES）才进入国旗模式。
 // 仅"图标名 === 码" 或已知国旗库的标准后缀形态；剔除伪装者。
 // 例如 gb 命中 circle-flags:gb / flag:gb-1x1 / flag:gb-4x3 / cif:gb / flagpack:gb
 // 不命中 circle-flags:gb-eng / flag:gb-sct-1x1 / token:gbex
 export function isCountryCode(term: string): boolean {
-  return /^[a-z]{1,3}$/.test(term);
+  return COUNTRY_CODES.has(term);
 }
 
 export function filterCountryIcons(icons: string[], term: string): string[] {
@@ -133,9 +146,19 @@ export function filterCountryIcons(icons: string[], term: string): string[] {
 export function filterCountryIconsForTerms(icons: string[], terms: string[]): string[] {
   const codes = terms.filter(isCountryCode);
   if (codes.length === 0) return icons;
+  const nonCodes = terms.filter((t) => t && !isCountryCode(t));
   const keep = new Set<string>();
+  // 国家码：仅保留严格国旗匹配（剔除 gbex / gb-eng 之类伪装者）
   for (const code of codes) {
     for (const ic of filterCountryIcons(icons, code)) keep.add(ic);
+  }
+  // 非国家码词：仍按普通子串匹配保留，避免混合翻译（如 汽车→[car, vehicle]）里
+  // 某个词恰好是国家码时，把其余正常结果一并丢弃。
+  if (nonCodes.length > 0) {
+    for (const full of icons) {
+      const name = full.split(":").pop()!.toLowerCase();
+      if (nonCodes.some((t) => name.includes(t))) keep.add(full);
+    }
   }
   return [...keep];
 }

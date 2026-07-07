@@ -13,6 +13,7 @@ import {
 } from "./lib/api";
 import { detectVariants, matchesVariant } from "./lib/variants";
 import { isChinese, loadDict, translateChinese, filterCountryIconsForTerms, isCountryCode } from "./lib/zhSearch";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import "./styles.css";
 
 const PAGE = 200;
@@ -98,8 +99,8 @@ export default function App() {
             lowerTerms.length === 0
               ? []
               : allIcons.filter((full) => {
-                  const name = full.split(":").pop()!.toLowerCase();
-                  const prefix = full.split(":")[0];
+                  const [prefix, rawName] = full.split(":");
+                  const name = rawName.toLowerCase();
                   return lowerTerms.some((t) => {
                     if (isCountryCode(t)) {
                       // 国旗精确匹配：短码严格等 或 flag 库带尺寸后缀；仅国旗库
@@ -126,9 +127,10 @@ export default function App() {
           setTotal(filtered.length);
         } else {
           // 全局搜索
+          const zh = isChinese(query);
           let r;
           let terms: string[] = [];
-          if (isChinese(query)) {
+          if (zh) {
             await loadDict();
             terms = translateChinese(query);
             r = await searchIconsMulti(terms, limit);
@@ -137,10 +139,15 @@ export default function App() {
             r = await searchIcons(query, limit);
           }
           if (!alive) return;
-          // 国旗精确过滤：若翻译词含短国家码，剔除伪装者
-          const finalIcons = filterCountryIconsForTerms(r.icons, terms.map((t) => t.toLowerCase()));
+          const lowered = terms.map((t) => t.toLowerCase());
+          // 国旗精确过滤：若翻译词含真实国家码，剔除伪装者
+          const finalIcons = filterCountryIconsForTerms(r.icons, lowered);
           setNames(finalIcons);
-          setTotal(finalIcons.length);
+          // “加载更多”需要真实总数：普通英文单词搜索用 API 返回的 total（可翻页到 200 以上）；
+          // 中文多词并集 / 国旗过滤 / 已取尽（返回不足 limit）时无可靠服务端总数，用当前结果数。
+          const noServerTotal =
+            zh || lowered.some(isCountryCode) || r.icons.length < limit;
+          setTotal(noServerTotal ? finalIcons.length : r.total);
         }
       } else if (activePrefix) {
         // 浏览当前库
@@ -171,6 +178,11 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    // Overlay 标题栏由网页内容绘制；同步原生窗口主题让交通灯明暗也跟随 App 主题。
+    // 非 Tauri 环境（纯浏览器 dev）下静默跳过。
+    if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
+      getCurrentWindow().setTheme(theme).catch(() => {});
+    }
   }, [theme]);
 
   // Variants only make sense when browsing a single set (not global search).
@@ -258,6 +270,9 @@ export default function App() {
 
   return (
     <div className="app">
+      {/* Overlay 标题栏：内容顶到窗口顶部，需显式全宽拖拽条，否则顶部无法拖动窗口。
+          交通灯为原生层浮于其上仍可点击；下方搜索框在 34px 之下不受影响。 */}
+      <div className="titlebar-drag" data-tauri-drag-region />
       <Sidebar
         collections={collections}
         activePrefix={activePrefix}

@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "tauri:build": "tauri build",
+    "tauri:build:universal": "tauri build --target universal-apple-darwin",
+    "tauri:build:intel": "tauri build --target x86_64-apple-darwin"
   },
   "dependencies": {
     "@iconify/react": "^6.0.2",

@@ -65,7 +65,7 @@ export function Sidebar({
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-header" data-tauri-drag-region>
+      <div className="sidebar-header">
         <div className="sidebar-search">
           <Icon icon="lucide:search" className="search-icon" />
           <input

@@ -9,7 +9,6 @@
 
 :root[data-theme="dark"] {
   --bg: #0a0a0b;
-  --bg-sidebar: #0d0d0f;
   --surface: #151518;
   --surface-2: #1b1b1f;
   --surface-hover: #212127;
@@ -26,7 +25,6 @@
 
 :root[data-theme="light"] {
   --bg: #f4f4f5;
-  --bg-sidebar: #ececee;
   --surface: #ffffff;
   --surface-2: #f7f7f8;
   --surface-hover: #eeeef0;
@@ -95,12 +93,24 @@ select {
   background: var(--bg);
 }
 
+/* 全宽标题栏拖拽条（Overlay 模式下内容顶到窗口顶部，须显式声明可拖拽区域，
+   否则顶部无法拖动窗口）。高度 = 顶部交通灯留白；原生交通灯浮于其上仍可点击，
+   下方搜索框位于 34px 之下不受影响。 */
+.titlebar-drag {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 34px;
+  z-index: 100;
+}
+
 .sidebar {
   width: 250px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background: var(--bg-sidebar);
+  background: var(--bg);
   border-right: 1px solid var(--border);
 }
 
@@ -108,7 +118,7 @@ select {
    search spans the full sidebar width and lines up with the main search. */
 .sidebar-header {
   flex-shrink: 0;
-  padding: 42px 12px 6px;
+  padding: 34px 12px 6px;
 }
 
 .sidebar-search {
@@ -140,7 +150,10 @@ select {
 
 .sidebar-scroll {
   flex: 1;
-  overflow-y: auto;
+  /* 恒定预留滚动条宽度：展开分类出现滚动条时内容不左移。用 overflow:scroll 而非
+     scrollbar-gutter（后者需 Safari 18.2 / macOS 15.2+，旧系统无效）；自定义滚动条
+     轨道透明，未滚动时预留的 10px 不可见。 */
+  overflow-y: scroll;
   padding: 8px 12px 24px;
 }
 
@@ -321,7 +334,7 @@ select {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 42px 20px 6px;
+  padding: 34px 20px 6px;
 }
 
 .search {
@@ -491,7 +504,8 @@ select {
 /* ---------- grid ---------- */
 .content {
   flex: 1;
-  overflow-y: auto;
+  /* scroll 而非 auto：结果集从少变多、滚动条出现时主网格不左移（与侧栏同处理）。 */
+  overflow-y: scroll;
   padding: 0 20px 40px;
 }
 .grid-wrap {

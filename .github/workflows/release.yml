@@ -1,0 +1,49 @@
+name: Release (macOS Universal)
+
+# 打 tag（如 v0.1.2）即自动构建 Universal（Intel + Apple Silicon）.dmg 并发到 Releases（草稿）。
+# 发 tag 前请先把 src-tauri/tauri.conf.json 与 package.json 的 version 同步成该 tag，
+# 否则产物文件名/版本号会与 Release 标题不一致。仅用 tag 触发（不加 workflow_dispatch：
+# 手动触发时 github.ref_name 是分支名，会被当成版本号建出垃圾 Release）。
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # 允许 tauri-action 创建 Release 并上传产物
+
+jobs:
+  build-macos-universal:
+    runs-on: macos-latest # 现为 Apple Silicon 运行器，可交叉编译出 x86_64 分片
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Rust (both mac targets)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install frontend deps
+        run: npm ci
+
+      - name: Build & release Universal .dmg
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 未做 Apple 签名 / 公证，故不设置签名相关 secrets。
+        with:
+          args: --target universal-apple-darwin
+          tagName: ${{ github.ref_name }}
+          releaseName: "Icônes ${{ github.ref_name }}"
+          releaseDraft: true
+          prerelease: false
