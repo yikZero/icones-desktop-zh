@@ -3,6 +3,7 @@ import { Icon } from "@iconify/react";
 import { Sidebar, type PaletteFilter } from "./components/Sidebar";
 import { Topbar, type ThemeMode } from "./components/Topbar";
 import { IconGrid } from "./components/IconGrid";
+import { CollectionIconStrip } from "./components/IconImage";
 import { VariantBar } from "./components/VariantBar";
 import { ExportPanel } from "./components/ExportPanel";
 import {
@@ -608,6 +609,11 @@ export default function App() {
                             <Icon icon="ri:star-fill" />
                           </span>
                         </div>
+                        <CollectionIconStrip
+                          prefix={prefix}
+                          samples={meta?.samples}
+                          size={22}
+                        />
                         <div className="fav-card-meta">
                           <span>{prefix}</span>
                           {meta?.total !== undefined && (

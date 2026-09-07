@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import type { CollectionMeta } from "../lib/api";
+import { IconStrip } from "./IconImage";
 import { RELEASES_URL, checkForUpdates, getAppVersion, openExternal, resetUpdateCheck } from "../lib/update";
 
 export type PaletteFilter = "all" | "mono" | "color";
@@ -160,19 +161,27 @@ export function Sidebar({
                       return (
                         <button
                           key={c.prefix}
-                          className={`tree-child ${!isFavView && activePrefix === c.prefix ? "active" : ""}`}
+                          className={`tree-child tree-child-2row ${!isFavView && activePrefix === c.prefix ? "active" : ""}`}
                           onClick={() => onSelect(c.prefix)}
                           title={`${c.name} · ${c.total} icons`}
                         >
-                          <span className="truncate">{c.name}</span>
-                          <span
-                            className={`fav-star-btn ${isFav ? "active" : ""}`}
-                            onClick={(e) => onToggleFavCollection(c.prefix, e)}
-                            title={isFav ? "取消收藏此库" : "收藏此库"}
-                          >
-                            <Icon icon={isFav ? "ri:star-fill" : "ri:star-line"} />
+                          <span className="tree-child-top">
+                            <span className="truncate">{c.name}</span>
+                            <span
+                              className={`fav-star-btn ${isFav ? "active" : ""}`}
+                              onClick={(e) => onToggleFavCollection(c.prefix, e)}
+                              title={isFav ? "取消收藏此库" : "收藏此库"}
+                            >
+                              <Icon icon={isFav ? "ri:star-fill" : "ri:star-line"} />
+                            </span>
+                            <span className="count">{c.total}</span>
                           </span>
-                          <span className="count">{c.total}</span>
+                          <IconStrip
+                            names={(c.samples ?? [])
+                              .slice(0, 5)
+                              .map((n) => `${c.prefix}:${n}`)}
+                            size={13}
+                          />
                         </button>
                       );
                     })}

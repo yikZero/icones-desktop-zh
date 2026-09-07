@@ -554,6 +554,39 @@ select {
 }
 
 
+/* ---------- icon strip（图标库样本图标条） ---------- */
+.icon-strip {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.icon-strip-img {
+  display: block;
+  border-radius: 3px;
+}
+.tree-child .icon-strip {
+  margin-top: 1px;
+}
+/* 两行布局：上行 = 名称 + 收藏星 + 数量；下行 = 5 个样本图标 */
+.tree-child-2row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  padding: 7px 10px 8px;
+}
+.tree-child-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.fav-card-icons-gap {
+  height: 4px;
+}
+.fav-collection-card .icon-strip {
+  padding: 2px 0 10px;
+}
+
 /* ---------- fav collections section in main content ---------- */
 .fav-collections-section {
   margin-bottom: 20px;
